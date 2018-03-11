@@ -1,4 +1,3 @@
-from gas_turbine_cycle.gases import Air
 from gas_turbine_cycle.tools.gas_dynamics import GasDynamicFunctions as gd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -50,16 +49,25 @@ class StageGeom:
         self.r3_av_rel = None
 
     @classmethod
+    def _get_out_in_ring_ratio(cls, const_diam_par):
+        if const_diam_par != 0:
+            return (1 - const_diam_par) / const_diam_par
+        else:
+            return 1e4
+
+    @classmethod
     def get_d_in_rel(cls, F, const_diam_par, D_const):
+        out_in_ring_ratio = cls._get_out_in_ring_ratio(const_diam_par)
         res = (
-                      (np.pi / 4 * (1 + const_diam_par) * D_const ** 2 - F) /
-                      (F * const_diam_par + np.pi / 4 * (1 + const_diam_par) * D_const ** 2)
+                      (np.pi / 4 * (1 + out_in_ring_ratio) * D_const ** 2 - F) /
+                      (F * out_in_ring_ratio + np.pi / 4 * (1 + out_in_ring_ratio) * D_const ** 2)
         ) ** 0.5
         return res
 
     @classmethod
     def get_D_const(cls, d_in_rel, const_diam_par, D_out):
-        res = D_out * np.sqrt((1 + d_in_rel**2 * const_diam_par) / (1 + const_diam_par))
+        out_in_ring_ratio = cls._get_out_in_ring_ratio(const_diam_par)
+        res = D_out * np.sqrt((1 + d_in_rel**2 * out_in_ring_ratio) / (1 + out_in_ring_ratio))
         return res
 
     @classmethod
@@ -91,14 +99,15 @@ class StageGeom:
         self.D15_in = self.D15_out * self.d15_in_rel
         self.D20_in = self.D20_out * self.d20_in_rel
         self.D25_in = self.D25_out * self.d25_in_rel
+        self.D1_av = np.sqrt(self.D1_out**2 - 2 * self.F1 / np.pi)
+        self.D3_av = np.sqrt(self.D3_out**2 - 2 * self.F1 / np.pi)
 
 
 class Stage:
-    def __init__(self, work_fluid: Air, H_t_rel, H_t_rel_next, u1_out, k_h, eta_ad_stag, d1_in_rel,
+    def __init__(self, k_av, R_gas, H_t_rel, H_t_rel_next, u1_out, k_h, eta_ad_stag, d1_in_rel,
                  c1_a_rel, c3_a_rel, R_av, R_av_next, T1_stag, p1_stag, G, n, h_rk_rel=2.5, h_na_rel=3.0,
                  delta_a_rk_rel=0.3, delta_a_na_rel=0.3, const_diam_par=0.5, precision=0.001):
         """
-        :param work_fluid: Рабочее тело.
         :param H_t_rel: Коэффициент напора ступени.
         :param H_t_rel_next: Коэффициент напора следующей ступени.
         :param u1_out: Окружная скорость на конце рабочей лопатки.
@@ -120,7 +129,9 @@ class Stage:
         :param const_diam_par: Параметр, определяющий положения постоянного диаметра ступени.
         :param precision: Точность итерационного расчета.
         """
-        self.work_fluid = work_fluid
+        self.k_av = k_av
+        self.R_gas = R_gas
+        self.c_p_av = k_av * R_gas / (k_av - 1)
         self.H_t_rel = H_t_rel
         self.H_t_rel_next = H_t_rel_next
         self.u1_out = u1_out
@@ -135,11 +146,6 @@ class Stage:
         self.G = G
         self.n = n
         self.precision = precision
-        self.c_p_av = None
-        self.k_av = None
-        self.R_gas = None
-        self.k_av_old = None
-        self.k_res = None
         self.geom = StageGeom()
         self.geom.h_rk_rel = h_rk_rel
         self.geom.h_na_rel = h_na_rel
@@ -149,21 +155,10 @@ class Stage:
         self.geom.d1_in_rel = d1_in_rel
 
     def compute(self):
-        self.work_fluid.T1 = self.T1_stag
-        self.c_p_av = self.work_fluid.c_p_av_int
-        self.k_av = self.work_fluid.k_av_int
-        self.R_gas = self.work_fluid.R
-        self.k_res = 1
-        while self.k_res >= self.precision:
-            self.k_av_old = self.k_av
-            self._one_iter()
-            self.work_fluid.T2 = self.T3_stag
-            self.k_av = self.work_fluid.k_av_int
-            self.c_p_av = self.work_fluid.c_p_av_int
-            self.k_res = abs(self.k_av - self.k_av_old) / self.k_av
+        self._compute_gas_dynamics()
         self.geom.compute()
 
-    def _one_iter(self):
+    def _compute_gas_dynamics(self):
         self.c1_a = self.u1_out * self.c1_a_rel
         self.H_t = self.H_t_rel * self.u1_out ** 2
         self.L_z = self.k_h * self.H_t
@@ -174,7 +169,7 @@ class Stage:
         self.p3_stag = self.p1_stag * self.pi_stag
         self.a_cr1 = gd.a_cr(self.T1_stag, self.k_av, self.R_gas)
         self.a_cr3 = gd.a_cr(self.T3_stag, self.k_av, self.R_gas)
-        self.geom.r1_av_rel = ((1 + self.geom.d1_in_rel) / 2) ** 0.5
+        self.geom.r1_av_rel = ((1 + self.geom.d1_in_rel**2) / 2) ** 0.5
         self.c1_u_rel = self.geom.r1_av_rel * (1 - self.R_av) - self.H_t_rel / (2 * self.geom.r1_av_rel)
         self.c1_u = self.c1_u_rel * self.u1_out
         self.c1 = np.sqrt(self.c1_u**2 + self.c1_a**2)
@@ -194,6 +189,8 @@ class Stage:
             self.u3_out_old = self.u3_out
             self.alpha3, self.u3_out, self.outlet_geom_res = self._get_outlet_section_params(self.alpha3_old,
                                                                                              self.u3_out_old)
+        self.c3_u = self.c3_u_rel * self.u3_out
+        self.c3 = np.sqrt(self.c3_a + self.c3_u)
         self.geom.r2_av_rel = 0.5 * (self.geom.r1_av_rel + self.geom.r3_av_rel)
         self.c2_u_rel = (self.H_t_rel + self.c1_u_rel * self.geom.r1_av_rel) / self.geom.r2_av_rel
         self.c2_a = 0.5 * (self.c1_a + self.c3_a)
@@ -225,13 +222,16 @@ class Stage:
         self.c3_a = u3_out * self.c1_a_rel_next
         self.lam3 = self.c3_a / (np.sin(alpha3) * self.a_cr3)
         self.q3 = gd.q(self.lam3, self.k_av)
-        self.geom.F3 = self.geom.F1 * (self.q1 * self.p1_stag) / (self.q3 * self.p3_stag) * \
-                       np.sqrt(self.T3_stag / self.T1_stag)
+        self.geom.F3 = self.geom.F1 * (self.q1 * self.p1_stag * np.sin(self.alpha1)) / \
+                       (self.q3 * self.p3_stag * np.sin(alpha3)) * np.sqrt(self.T3_stag / self.T1_stag)
         self.geom.d3_in_rel = self.geom.get_d_in_rel(self.geom.F3, self.geom.const_diam_par, self.geom.D_const)
         self.geom.r3_av_rel = ((1 + self.geom.d3_in_rel ** 2) / 2) ** 0.5
         self.c3_u_rel = self.geom.r3_av_rel * (1 - self.R_av_next) - self.H_t_rel_next / (2 * self.geom.r3_av_rel)
-        alpha3_new = np.arctan(self.c1_a_rel_next / self.c3_u_rel)
-        self.geom.D3_out = (4 * self.geom.F3 / (np.pi * (1 - self.geom.d3_in_rel ** 2)))
+        if self.c3_u_rel != 0:
+            alpha3_new = np.arctan(self.c1_a_rel_next / self.c3_u_rel)
+        else:
+            alpha3_new = np.arctan(np.inf)
+        self.geom.D3_out = self.geom.get_D_out(self.geom.F3, self.geom.d3_in_rel)
         self.geom.D3_in = self.geom.D3_out * self.geom.d3_in_rel
         u3_out_new = np.pi * self.geom.D3_out * self.n / 60
         res = max(abs(alpha3 - alpha3_new) / alpha3, abs(u3_out - u3_out_new) / u3_out)
