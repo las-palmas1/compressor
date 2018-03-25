@@ -1,9 +1,10 @@
 import unittest
-from average_stream_line.stage_tools import Stage
+from .stage_tools import Stage
 from gas_turbine_cycle.gases import Air
-from average_stream_line.compressor import Compressor
-from average_stream_line.dist_tools import QuadraticBezier
+from .compressor import Compressor
+from .dist_tools import QuadraticBezier
 import numpy as np
+from scipy.interpolate import interp1d
 
 
 class StageTests(unittest.TestCase):
@@ -67,12 +68,37 @@ class StageTests(unittest.TestCase):
         self.assertNotEqual(None, self.stage.geom.length)
 
 
+class DistToolsTests(unittest.TestCase):
+    def setUp(self):
+        self.bezier_dist = QuadraticBezier(0.32, 0.33, 10, angle1=np.radians(10), angle2=np.radians(10))
+
+    def test_change_angles_values(self):
+        self.x0_old = self.bezier_dist.x0
+        self.bezier_dist.angle1 = np.radians(15)
+        self.x0_new = self.bezier_dist.x0
+        self.assertNotEqual(self.x0_old, self.x0_new)
+
+    def test_chane_central_poles_coord_value(self):
+        self.angle1_old = self.bezier_dist.angle1
+        self.bezier_dist.x0 = 0.8
+        self.angle1_new = self.bezier_dist.angle1
+        self.assertNotEqual(self.angle1_old, self.angle1_new)
+
+
 class CompressorTests(unittest.TestCase):
     def setUp(self):
         stage_num = 12
-        self.H_t_rel_dist = QuadraticBezier(0.32, np.radians(10), 0.33, np.radians(10), stage_num).get_dist()
-        self.eta_ad_stag_dist = QuadraticBezier(0.85, np.radians(10), 0.86, np.radians(10), stage_num).get_dist()
-        self.c1_a_rel_dist = QuadraticBezier(0.45, np.radians(10), 0.51, np.radians(-1), stage_num).get_dist()
+        self.H_t_rel_arr = QuadraticBezier(0.32, 0.33, stage_num, angle1=np.radians(10),
+                                           angle2=np.radians(10)).get_array()
+        self.eta_ad_stag_arr = QuadraticBezier(0.85, 0.86, stage_num, angle1=np.radians(10),
+                                               angle2=np.radians(10)).get_array()
+        self.c1_a_rel_arr = QuadraticBezier(0.45, 0.51, stage_num, angle1=np.radians(10),
+                                            angle2=np.radians(-1)).get_array()
+        self.h_rk_rel_dist = lambda z: interp1d([0, stage_num - 1], [2.5, 1.6])(z).__float__()
+        self.h_na_rel_dist = lambda z: interp1d([0, stage_num - 1], [3.2, 1.8])(z).__float__()
+        self.delta_a_rk_rel = lambda z: interp1d([0, stage_num - 1], [0.3, 0.5])(z).__float__()
+        self.delta_a_na_rel = lambda z: interp1d([0, stage_num - 1], [0.3, 0.5])(z).__float__()
+
         self.compressor = Compressor(
             work_fluid=Air(),
             stage_num=stage_num,
@@ -81,11 +107,15 @@ class CompressorTests(unittest.TestCase):
             T0_stag=288,
             G=40,
             n=11000,
-            H_t_rel_dist=self.H_t_rel_dist,
-            eta_ad_stag_dist=self.eta_ad_stag_dist,
-            R_av_dist=lambda z: 0.5,
-            k_h_dist=lambda z: 0.98,
-            c1_a_rel_dist=self.c1_a_rel_dist,
+            H_t_rel_arr=self.H_t_rel_arr,
+            eta_ad_stag_arr=self.eta_ad_stag_arr,
+            R_av_arr=QuadraticBezier.get_array_from_dist(lambda z: 0.5, stage_num),
+            k_h_arr=QuadraticBezier.get_array_from_dist(lambda z: 0.98, stage_num),
+            c1_a_rel_arr=self.c1_a_rel_arr,
+            h_rk_rel_arr=QuadraticBezier.get_array_from_dist(self.h_rk_rel_dist, stage_num),
+            h_na_rel_arr=QuadraticBezier.get_array_from_dist(self.h_na_rel_dist, stage_num),
+            delta_a_rk_rel_arr=QuadraticBezier.get_array_from_dist(self.delta_a_rk_rel, stage_num),
+            delta_a_na_rel_arr=QuadraticBezier.get_array_from_dist(self.delta_a_na_rel, stage_num),
             d1_in_rel1=0.5,
             zeta_inlet=0.04,
             zeta_outlet=0.35,
@@ -97,6 +127,10 @@ class CompressorTests(unittest.TestCase):
         self.compressor.plot_init_param_dist('H_t_rel')
         self.compressor.plot_init_param_dist('c1_a_rel')
         self.compressor.plot_init_param_dist('eta_ad_stag')
+        self.compressor.plot_init_param_dist('h_rk_rel')
+        self.compressor.plot_init_param_dist('h_na_rel')
+        self.compressor.plot_init_param_dist('delta_a_rk_rel')
+        self.compressor.plot_init_param_dist('delta_a_na_rel')
 
     def test_geometry_plot(self):
         self.compressor.plot_geometry()

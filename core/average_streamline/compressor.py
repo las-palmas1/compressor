@@ -1,6 +1,6 @@
-from average_stream_line.stage_tools import Stage
+from .stage_tools import Stage
 import typing
-from gas_turbine_cycle.gases import Air, IdealGas
+from gas_turbine_cycle.gases import IdealGas
 import numpy as np
 from gas_turbine_cycle.tools.gas_dynamics import GasDynamicFunctions as gd
 from scipy.interpolate import InterpolatedUnivariateSpline
@@ -14,11 +14,15 @@ logging.basicConfig(format='%(levelname)s - %(message)s', level=logging.INFO)
 class Compressor:
     def __init__(
             self, work_fluid: IdealGas, stage_num: int, const_diam_par, p0_stag, T0_stag, G, n,
-            H_t_rel_dist: typing.Callable[[int], float],
-            eta_ad_stag_dist: typing.Callable[[int], float],
-            R_av_dist: typing.Callable[[int], float],
-            k_h_dist: typing.Callable[[int], float],
-            c1_a_rel_dist: typing.Callable[[int], float],
+            H_t_rel_arr: typing.List[float],
+            eta_ad_stag_arr: typing.List[float],
+            R_av_arr: typing.List[float],
+            k_h_arr: typing.List[float],
+            c1_a_rel_arr: typing.List[float],
+            h_rk_rel_arr: typing.List[float],
+            h_na_rel_arr: typing.List[float],
+            delta_a_rk_rel_arr: typing.List[float],
+            delta_a_na_rel_arr: typing.List[float],
             d1_in_rel1, zeta_inlet, zeta_outlet, c11_init,
             precision=0.001
     ):
@@ -32,11 +36,15 @@ class Compressor:
         self.T0_stag = T0_stag
         self.G = G
         self.n = n
-        self.H_t_rel_arr = self._get_array_from_dist(H_t_rel_dist, stage_num)
-        self.eta_ad_stag_arr = self._get_array_from_dist(eta_ad_stag_dist, stage_num)
-        self.R_av_arr = self._get_array_from_dist(R_av_dist, stage_num)
-        self.k_h_arr = self._get_array_from_dist(k_h_dist, stage_num)
-        self.c1_a_rel_arr = self._get_array_from_dist(c1_a_rel_dist, stage_num)
+        self.H_t_rel_arr = H_t_rel_arr
+        self.eta_ad_stag_arr = eta_ad_stag_arr
+        self.R_av_arr = R_av_arr
+        self.k_h_arr = k_h_arr
+        self.c1_a_rel_arr = c1_a_rel_arr
+        self.h_rk_rel_arr = h_rk_rel_arr
+        self.h_na_rel_arr = h_na_rel_arr
+        self.delta_a_rk_rel_arr = delta_a_rk_rel_arr
+        self.delta_a_na_rel_arr = delta_a_na_rel_arr
         self.d1_in_rel1 = d1_in_rel1
         self.zeta_inlet = zeta_inlet
         self.zeta_outlet = zeta_outlet
@@ -51,7 +59,7 @@ class Compressor:
         self.c11_res = None
         self.residual = None
         self._iter_num = None
-        self._stages = self._get_stages()
+        self._stages: typing.List[Stage] = None
 
     def __iter__(self):
         self._item = 0
@@ -74,16 +82,11 @@ class Compressor:
     def __len__(self):
         return self.stage_num
 
-    @classmethod
-    def _get_array_from_dist(cls, dist: typing.Callable[[int], float], stage_num) -> typing.List[float]:
-        res = [dist(i) for i in range(stage_num)]
-        return res
-
     def _get_stages(self) -> typing.List[Stage]:
         stages = []
         for i in range(self.stage_num):
             if i != self.stage_num - 1:
-                stages.append(Stage(
+                stage = Stage(
                     k_av=self.k_av,
                     R_gas=self.work_fluid.R,
                     H_t_rel=self.H_t_rel_arr[i],
@@ -101,10 +104,14 @@ class Compressor:
                     G=self.G,
                     n=self.n,
                     const_diam_par=self.const_diam_par,
-                    precision=self.precision
-                ))
+                    precision=self.precision,
+                    h_rk_rel=self.h_rk_rel_arr[i],
+                    h_na_rel=self.h_na_rel_arr[i],
+                    delta_a_rk_rel=self.delta_a_rk_rel_arr[i],
+                    delta_a_na_rel=self.delta_a_na_rel_arr[i],
+                )
             else:
-                stages.append(Stage(
+                stage = Stage(
                     k_av=self.k_av,
                     R_gas=self.work_fluid.R,
                     H_t_rel=self.H_t_rel_arr[i],
@@ -122,8 +129,13 @@ class Compressor:
                     G=self.G,
                     n=self.n,
                     const_diam_par=self.const_diam_par,
-                    precision=self.precision
-                ))
+                    precision=self.precision,
+                    h_rk_rel=self.h_rk_rel_arr[i],
+                    h_na_rel=self.h_na_rel_arr[i],
+                    delta_a_rk_rel=self.delta_a_rk_rel_arr[i],
+                    delta_a_na_rel=self.delta_a_na_rel_arr[i],
+                )
+            stages.append(stage)
         return stages
 
     def _get_sigma_inlet(self, k, eps, lam):
@@ -133,6 +145,7 @@ class Compressor:
         return 1 - self.zeta_outlet * (k / (k + 1)) * eps * lam**2
 
     def compute(self):
+        self._stages = self._get_stages()
         self.work_fluid.T1 = self.T0_stag
         self.k_av_res = 1
         self.c11_res = 1
@@ -149,6 +162,7 @@ class Compressor:
             self.residual = max(self.k_av_res, self.c11_res)
             self._iter_num += 1
             logging.info('Residual = %.4f\n' % self.residual)
+        self._compute_integrate_parameters()
 
     def _get_inlet_velocity(self, c11, k_av):
         self.a_cr11 = gd.a_cr(self.T0_stag, k_av, self.work_fluid.R)
@@ -191,7 +205,7 @@ class Compressor:
         self.work_fluid.T2 = self.last.T3_stag
         self.k_av = self.work_fluid.k_av_int
         self.c_p_av = self.work_fluid.c_p_av_int
-        self.pi_la_stag = self.last.p3_stag / self.last.p1_stag
+        self.pi_la_stag = self.last.p3_stag / self.first.p1_stag
         self.eta_la_stag = self.T0_stag * (self.pi_la_stag ** ((self.k_av - 1) / self.k_av) - 1) / \
                            (self.last.T3_stag - self.first.T1_stag)
         self.sigma_outlet = self._get_sigma_outlet(self.last.k_av, gd.eps_lam(self.last.lam3, self.last.k_av),
@@ -318,6 +332,22 @@ class Compressor:
         plt.ylabel(r'$p^*,\ МПа$', fontsize=12)
         self._set_dist_plot(fname)
 
+    def plot_c_a_dist(self, figsize=(7, 5), fname=None):
+        plt.figure(figsize=figsize)
+        x_arr = np.linspace(1, self.stage_num + 1, 2 * (self.stage_num + 1) - 1)
+        y_arr = []
+        for stage, n in zip(self, range(self.stage_num)):
+            if n != self.stage_num - 1:
+                y_arr.append(stage.c1_a)
+                y_arr.append(stage.c2_a)
+            else:
+                y_arr.append(stage.c1_a)
+                y_arr.append(stage.c2_a)
+                y_arr.append(stage.c3_a)
+        plt.plot(x_arr, y_arr, lw=1.5, color='orange')
+        plt.ylabel(r'$c_a,\ м/с$', fontsize=12)
+        self._set_dist_plot(fname)
+
     def plot_init_param_dist(self, name: str, figsize=(7, 5), fname=None):
         get_attr = object.__getattribute__
         value_arr = get_attr(self, name + '_arr')
@@ -325,8 +355,11 @@ class Compressor:
         plt.figure(figsize=figsize)
         plt.plot(x_arr, value_arr, lw=1.5, color='orange', label=name)
         plt.legend(fontsize=12)
-        plt.yticks(np.linspace(0, 1, 21), np.linspace(0, 1, 21))
-        plt.ylim(ymin=0, ymax=1)
+        if max(value_arr) <= 1:
+            plt.ylim(ymin=0, ymax=1)
+            plt.yticks(np.linspace(0, 1, 21), np.linspace(0, 1, 21))
+        else:
+            plt.ylim(ymin=0)
         self._set_dist_plot(fname)
 
 
