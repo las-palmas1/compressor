@@ -131,7 +131,6 @@ class Stage:
         """
         self.k_av = k_av
         self.R_gas = R_gas
-        self.c_p_av = k_av * R_gas / (k_av - 1)
         self.H_t_rel = H_t_rel
         self.H_t_rel_next = H_t_rel_next
         self.u1_out = u1_out
@@ -159,6 +158,7 @@ class Stage:
         self.geom.compute()
 
     def _compute_gas_dynamics(self):
+        self.c_p_av = self.k_av * self.R_gas / (self.k_av - 1)
         self.c1_a = self.u1_out * self.c1_a_rel
         self.H_t = self.H_t_rel * self.u1_out ** 2
         self.L_z = self.k_h * self.H_t

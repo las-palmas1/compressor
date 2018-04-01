@@ -24,7 +24,7 @@ class Compressor:
             delta_a_rk_rel_arr: typing.List[float],
             delta_a_na_rel_arr: typing.List[float],
             d1_in_rel1, zeta_inlet, zeta_outlet, c11_init,
-            precision=0.001
+            precision=0.0001
     ):
         self.work_fluid = work_fluid
         self.stage_num = stage_num
@@ -121,7 +121,7 @@ class Compressor:
                     eta_ad_stag=self.eta_ad_stag_arr[i],
                     d1_in_rel=None,
                     c1_a_rel=self.c1_a_rel_arr[i],
-                    c3_a_rel=self.c1_a_rel_arr[i],
+                    c3_a_rel=(self.c1_a_rel_arr[i] - self.c1_a_rel_arr[i - 1]) + self.c1_a_rel_arr[i],
                     R_av=self.R_av_arr[i],
                     R_av_next=1,
                     T1_stag=None,
@@ -161,7 +161,7 @@ class Compressor:
             self.c11_res = abs(self.c11 - self.c11_old) / self.c11
             self.residual = max(self.k_av_res, self.c11_res)
             self._iter_num += 1
-            logging.info('Residual = %.4f\n' % self.residual)
+            logging.info('Residual = %.5f\n' % self.residual)
         self._compute_integrate_parameters()
 
     def _get_inlet_velocity(self, c11, k_av):

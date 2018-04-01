@@ -5,6 +5,7 @@ from .compressor import Compressor
 from .dist_tools import QuadraticBezier
 import numpy as np
 from scipy.interpolate import interp1d
+import copy
 
 
 class StageTests(unittest.TestCase):
@@ -138,6 +139,11 @@ class CompressorTests(unittest.TestCase):
     def test_temp_and_press_dist(self):
         self.compressor.plot_temp_dist()
         self.compressor.plot_press_dist()
+
+    def test_compute_compressor_repeatedly(self):
+        compressor_old = copy.deepcopy(self.compressor)
+        self.compressor.compute()
+        self.assertLess(abs(self.compressor.k_av - compressor_old.k_av)/compressor_old.k_av, self.compressor.precision)
 
     def test_stage_parameters_transfer(self):
         for i in range(len(self.compressor) - 1):
