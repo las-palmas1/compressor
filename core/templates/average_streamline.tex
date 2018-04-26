@@ -1,0 +1,642 @@
+%%
+%% Author: Alexander
+%% 25.04.2018
+%%
+
+% Preamble
+\documentclass[a4paper,10pt]{article}
+
+% Packages
+\usepackage{mathtext}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage[left=2cm,right=2cm,
+    top=2cm,bottom=2cm,bindingoffset=0cm]{geometry}
+\usepackage{color}
+\usepackage{gensymb}
+
+\usepackage{enumitem}
+\setlist[enumerate]{label*=\arabic*.}
+
+\usepackage{indentfirst}
+
+\usepackage{titlesec}
+
+% Document
+\begin{document}
+
+    </ macro stage_tables(comp) />
+    </ set degr = 180 / 3.141592653589793 />
+    \begin{longtable}{|p{0.6cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|}
+        \caption{Параметры ступеней коспрессора.}\\ \hline
+        $N$ & $D_{1к}$, м & $u_{1к}$, м/с & $\bar{c}_{1a}$ & $\bar{H}_т$ & $\eta_{ад}^*$ &
+        $c_{1a}$, м/с & $\Delta с_{1a\ ст}$, м/с & $\Delta с_{1a\ рк}$, м/с \\ \hline
+%        </ for n in range(comp.stage_num) />
+        << n + 1 >> & $<< comp[n].geom.D1_out | round(3) >>$ & $<< comp[n].u1_out | round(2) >>$ &
+        $<< comp[n].c1_a_rel | round(3) >>$ &
+        $<< comp[n].H_t_rel | round(3) >>$ & $<< comp[n].eta_ad_stag | round(3) >>$ &
+        $<< comp[n].c1_a | round(2) >>$ & $<< (comp[n].c1_a - comp[n].c3_a) | round(2) >>$ &
+        $<< (comp[n].c1_a - comp[n].c2_a) | round(2) >>$ \\ \hline
+%        </ endfor />
+    \end{longtable}
+
+    \begin{longtable}{|p{0.6cm}|p{1.2cm}|p{1.2cm}|p{1.2cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|}
+        \caption{Параметры ступеней коспрессора.}\\ \hline
+        $N$ & $\bar{c}_{2a}$ & $\bar{d}_{1вт}$ & $H_т$, КДж/кг & $L_z$, КДж/кг & $H_{ад}$, КДж/кг & $\Delta T^*$, К & $T_1^*$, К&
+        $p_1^* \cdot 10^{-4}$, Па   \\ \hline
+%        </ for n in range(comp.stage_num) />
+        << n + 1 >> & $<< comp[n].c2_a_rel | round(3) >>$ & $<< comp[n].geom.d1_in_rel | round(3) >>$ &
+        $<< (comp[n].H_t / 10**3) | round(3) >>$ &
+        $<< (comp[n].L_z / 10**3) | round(3) >>$ & $<< (comp[n].H_ad / 10**3) | round(3) >>$ &
+        $<< (comp[n].delta_T_stag) | round(2) >>$ & $<< comp[n].T1_stag | round(2) >>$ &
+        $<< (comp[n].p1_stag / 10**4) | round(3) >>$  \\ \hline
+%        </ endfor />
+    \end{longtable}
+
+     \begin{longtable}{|p{0.6cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|}
+        \caption{Параметры ступеней коспрессора.}\\ \hline
+        $N$ & $a_{кр1}$, м/с & $\bar{r}_{ср1}$ & $\bar{c}_{u1}$ & $\alpha_1, ^\circ$ & $\alpha_2,\ ^\circ$ &
+        $\varepsilon_{рк},\ ^\circ$ & $\varepsilon_{на},\ ^\circ$ & $w_1$, м/с  \\ \hline
+%        </ for n in range(comp.stage_num) />
+        << n + 1 >> & $<< comp[n].a_cr1 | round(2) >>$ & $<< comp[n].geom.r1_av_rel | round(3) >>$ &
+        $<< comp[n].c1_u_rel | round(3) >>$ & $<< (comp[n].alpha1 * degr) | round(2) >>$ & $<< (comp[n].alpha2 * degr) | round(2) >>$ &
+        $<<(comp[n].epsilon_rk * degr) | round(2)>>$ & $<<(comp[n].epsilon_na * degr) | round(2)>>$ &
+        $<< comp[n].w1 | round(2) >>$ \\ \hline
+%        </ endfor />
+    \end{longtable}
+
+    \begin{longtable}{|p{0.6cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}|p{1.1cm}| p{1.1cm}|p{1.1cm}|p{1.1cm}|}
+        \caption{Параметры ступеней коспрессора.}\\ \hline
+        $N$ & $w_2$, м/с & $c_1$, м/с & $c_2$, м/с & $\tau_1$ & $T_1$, К & $a_1$, м/с & $M_{w1}$ & $\lambda_{c2}$ \\ \hline
+%        </ for n in range(comp.stage_num) />
+        << n + 1 >> & $<< comp[n].w2 | round(2) >>$ &
+        $<< comp[n].c1 | round(2) >>$ & $<< comp[n].c2 | round(2) >>$ & $<< comp[n].tau1 | round(3) >>$ &
+        $<< comp[n].T1 | round(2) >>$ & $<< comp[n].a1 | round(2) >>$ & $<< comp[n].M_w1_av | round(3) >>$ &
+        $<< comp[n].lam2 | round(3) >>$\\ \hline
+%        </ endfor />
+    \end{longtable}
+
+    </ endmacro />
+
+    </ macro stage_init_data(stage) />
+    \begin{enumerate}
+
+        \item Коэффициент напора ступени: $\bar{H}_{т} = << stage.H_t_rel | round(3) >>$.
+        \item Коэффициент напора следующей ступени: $ \bar{H}_{т\ след} = << stage.H_t_rel_next | round(3) >>$.
+        \item Окружная скорость на конце рабоче лопатки: $ u_{1к} = << stage.u1_out | round(2) >>\ м/с $.
+        \item Поправочный коэффициент для учета влияния вязкости робочего тела у втулки и корпуса: $ k_H = << stage.k_h | round(3) >> $.
+        \item Адиабатический КПД ступени: $ \eta_{ад}^* = << stage.eta_ad_stag | round(3) >> $.
+        \item Относительный диаметр втулки на входе: $ \bar{d}_{1вт} = << stage.geom.d1_in_rel | round(3) >> $.
+        \item Коэффициент расхода на входе в ступень: $ \bar{c}_{1a} = << stage.c1_a_rel | round(3) >> $.
+        \item Коэффициент расхода на выходе из ступени: $ \bar{c}_{3a} = << stage.c3_a_rel | round(3) >> $.
+        \item Степень реактивности на среднем радиусе ступени: $ R_{ср} = << stage.R_av | round(3) >> $.
+        \item Степень реактивности на среднем радиусе следующей ступени: $ R_{ср\ след} = << stage.R_av_next | round(3) >> $.
+        \item Температура торможения на входе в ступень: $ T_1^* = << stage.T1_stag | round(3) >>\ К $.
+        \item Давление торможения на входе в ступень: $ p_1^* = << (stage.p1_stag / 10**6) | round(4) >>\ МПа $.
+        \item Расход на входе в ступень: $ G = << stage.G | round(2) >>\ кг/с $.
+        \item Частота вращения на входе в ступень: $ n = << stage.n | round(2) >>\ об/мин $.
+        \item Параметр, определяющий положения постоянного диаметра ступени: $ p_{пост} = << stage.geom.const_diam_par | round(3) >> $.
+
+
+    \end{enumerate}
+    </ endmacro />
+
+    </ macro stage(stage) />
+
+    </ set degr = 180 / 3.141592653589793 />
+
+    \begin{enumerate}
+
+        \item Средняя теплоемкость в процессе сжатия в компрессоре:
+
+        \[
+        	c_{p\ ср} = \frac{k_{ср} \cdot R}{k_{ср} - 1} = 
+        	\frac{<< stage.k_av | round(3) >> \cdot << stage.R_gas >> }{ << stage.k_av | round(3) >> - 1 } =
+			<< stage.c_p_av | round(2) >>\ Дж/кг.
+        \]
+		
+		\item Осевая скорость на входе в рабочее колесо:
+		
+		\[
+			c_{1a} = u_{1к} \cdot \bar{c}_{1a} = 
+			<< stage.u1_out | round(2) >> \cdot << stage.c1_a_rel | round(3) >> = << stage.c1_a | round(2) >>\ м/с.
+		\]
+
+        \item Теоретический напор ступени:
+
+        \[
+            H_т = \bar{H}_т \cdot u_{1к}^2 = 
+            << stage.H_t_rel | round(3) >> \cdot << stage.u1_out | round(2) >>^2 = 
+            << (stage.H_t / 10**3) | round(4) >>\ КДж/кг.
+        \]
+
+        \item Действительная работа сжатия:
+        \[
+            L_z = k_H \cdot H_т = << stage.k_h | round(3) >> \cdot << (stage.H_t / 10**3) | round(4) >> = 
+            << (stage.L_z / 10**3) | round(4) >>\ КДж/кг.
+        \]
+
+        \item Адиабатическая работа сжатия:
+        \[
+            H_{ад} = L_z \cdot \eta_{ад}^* = 
+            << (stage.L_z / 10**3) | round(4) >> \cdot << stage.eta_ad_stag | round(3) >> =
+            << (stage.H_ad / 10**3) | round(4) >>\ КДж/кг.
+        \]
+
+        \item Повышение полной температуры в сутпени:
+        \[
+            \Delta T^* = \frac{L_z}{c_{p\ ср}} = 
+            \frac{ << (stage.L_z / 10**3) | round(4) >> \cdot 10^3 }{ << stage.c_p_av | round(2) >> } = 
+            << stage.delta_T_stag | round(2) >>\ К.
+        \]
+
+        \item Полная температура на выходе из ступени:
+        \[
+            T_3^* = T_1^* + \Delta T^* = 
+            << stage.T1_stag | round(2) >> + << stage.delta_T_stag | round(2) >> = 
+            << stage.T3_stag | round(2) >>\ К.
+        \]
+
+        \item Степень повышения полного давления в ступени:
+        \[
+            \pi^* = \left( 1 + \frac{ H_{ад} }{ c_{p\ ср} \cdot T_1^* } \right) ^ { \frac{ k_{ср} }{ k_{ср} - 1 } } = 
+            \left( 
+                1 + \frac{ << (stage.H_ad / 10**3) | round(4) >> \cdot 10^3 
+                        }{ << stage.c_p_av | round(2) >> \cdot << stage.T1_stag | round(2) >> } 
+            \right) ^ 
+            { \frac{ << stage.k_av | round(3) >> }{ << stage.k_av | round(3) >> - 1 } } =
+            = << stage.pi_stag | round(3) >>
+        \]
+
+        \item Полное давление на выходе из ступени:
+        \[
+            p_3^* = p_1^* \cdot \pi^* = 
+            << (stage.p1_stag / 10**6) | round(4) >> \cdot << stage.pi_stage >> = 
+            << (stage.p3_stag / 10**6) | round(4) >>\ МПа.
+        \]
+
+        \item Критическая скорость звука на входе в ступень:
+        \[
+            a_{кр1} = \sqrt{ \frac{2 \cdot k_{ср} }{ k_{ср} + 1 } \cdot R \cdot T_1^* } = 
+            \sqrt{ 
+                \frac{ 
+                        2 \cdot << stage.k_av | round(3) >> 
+                    }{ 
+                        << stage.k_av | round(3) >> + 1 
+                } \cdot << stage.R_gas >> \cdot << stage.T1_stag | round(2) >>
+                } = 
+            << stage.a_cr1 | round(2) >>\ м/с.
+        \]
+
+        \item Критическая скорость звука на выходе из ступени:
+        \[
+            a_{кр3} = \sqrt{ \frac{2 \cdot k_{ср} }{ k_{ср} + 1 } \cdot R \cdot T_3^* } = 
+            \sqrt{ 
+                \frac{ 
+                        2 \cdot << stage.k_av | round(3) >> 
+                    }{ 
+                        << stage.k_av | round(3) >> + 1 
+                } \cdot << stage.R_gas >> \cdot << stage.T3_stag | round(2) >>
+                } = 
+            << stage.a_cr3 | round(2) >>\ м/с.
+        \] 
+
+        \item Относительный средний радиус на входе в ступен:
+        \[
+            \bar{r}_{1ср} = \sqrt{ \frac{ 1 + \bar{d}_{1вт}^2 }{ 2 } } = 
+            \sqrt{ \frac{ 1 + << stage.geom.d1_in_rel | round(3) >> ^ 2 }{ 2 } } = 
+            << stage.geom.r1_av_rel | round(3) >>.
+        \]
+
+        \item Безразмерная окружная составляющая абсолютной скорости на входе:
+        \[
+            \bar{c}_{1u} = \bar{r}_{1ср} \cdot (1 - R_{ср}) - \frac{ \bar{H}_т }{ 2 \cdot  \bar{r}_{1ср}} = 
+            << stage.geom.r1_av_rel | round(3) >> \cdot (1 - << stage.R_av | round(3) >>) -
+            \frac{ << stage.H_t_rel | round(3) >> }{ 2 \cdot  << stage.geom.r1_av_rel | round(3) >>} =
+            << stage.c1_u_rel | round(3) >>. 
+        \]
+
+        \item Окружная составляющая абсолютной скорости на входе:
+        \[
+            c_{1u} = \bar{c}_{1u} \cdot u_{1к} = 
+            << stage.c1_u_rel | round(3) >> \cdot << stage.u1_out | round(2) >> =
+            << stage.c1_u | round(3) >>\ м/с.
+        \]
+
+        \item Абсолютная скорость на входе:
+        \[
+            c_1 = \sqrt{ c_{1a}^2 + c_{1u}^2 } = 
+            \sqrt{ << stage.c1_a | round(2) >>^2 + << stage.c1_u | round(2) >>^2 } =
+            << stage.c1 | round(2) >>\ м/с.
+        \]
+
+        \item Направление абсолютной скорости на входе:
+        \[
+            \alpha_1 = \arctan{ \frac{ \bar{c}_{1a} }{ \bar{c}_{1u} } } =
+             \arctan{ \frac{ << stage.c1_a_rel | round(3) >> }{ << stage.c1_u_rel | round(3) >> } } = 
+             << (stage.alpha1 * degr) | round(3) >> ^\circ.
+        \]
+
+        \item Приведенная скорость на входе:
+        \[
+            \lambda_1 = \frac{ c_{1a} }{ \sin{\alpha_1} \cdot a_{кр1} } = 
+            \frac{ << stage.c1_a | round(2) >> }{ \sin{<< (stage.alpha1 * degr) | round(3) >>^\circ} \cdot << stage.a_cr1 | round(2) >> } = 
+            << stage.lam1 | round(4) >>.
+        \]
+
+        \item ГДФ расхода на входе:
+        \[
+            q_1 = q(\lambda_1, k_{ср}) = q(<< stage.lam1 | round(4) >>, << stage.k_av | round(3) >>) = 
+            << stage.q1 | round(3) >>.
+        \]
+
+        \item Кольцевая площадь на входе в ступень:
+        \begin{gather*}
+            F_1 = \frac{ G \cdot \sqrt{R \cdot T_1^*} }{ k_{ср} \cdot p_1^* \cdot q_1 \cdot \sin{\alpha_1} } =\\
+            =\frac{ 
+                << stage.G | round(2) >> \cdot \sqrt{ << stage.R_gas >> \cdot << stage.T1_stag | round(2) >>}
+            }{ 
+                << stage.k_av | round(3) >> \cdot << (stage.p1_stag / 10**6) | round(4) >> \cdot 10^6 \cdot << stage.q1 | round(3) >> 
+                \cdot \sin{<< (stage.alpha1 * degr) | round(3) >>^\circ} 
+            } =\\
+            =<< stage.geom.F1 | round(4) >>\ м^2.\\
+        \end{gather*}
+
+        \item Периферийный диаметр на входе:
+        \[
+            D_{1к} = \sqrt{ \frac{ 4 \cdot F_1 }{ \pi \cdot (1 - \bar{d}_{1вт}^2) } } = 
+            \sqrt{ \frac{ 
+                    4 \cdot << stage.geom.F1 | round(4) >> 
+                }{ 
+                    \pi \cdot (1 - << stage.geom.d1_in_rel | round(3) >>^2) 
+            } } = 
+            << (stage.geom.D1_out) | round(4) >>\ м.
+        \]
+
+        \item Втулочный диаметр на входе:
+        \[
+            D_{1вт} = \bar{d}_{1вт} \cdot D_{1к} = 
+            << stage.geom.d1_in_rel | round(3) >> \cdot << stage.geom.D1_out | round(4) >> = 
+            << stage.geom.D1_in | round(4) >>\ м.
+        \]
+
+        \item Постоянный диаметр:
+        \begin{gather*}
+            D_{пост} = D_{1к} \cdot 
+                \sqrt{ \frac{ 
+                        1 + \bar{d}_{1вт}^2 \cdot \frac{ 1 - p_{пост} }{ p_{пост} }  
+                    }{
+                        1 + \frac{ 1 - p_{пост} }{ p_{пост}}
+                } } =\\
+            =<< (stage.geom.D1_out) | round(4) >> \cdot 
+                \sqrt{ \frac{ 
+                        1 + << stage.geom.d1_in_rel | round(3) >>^2 \cdot 
+                        \frac{ 1 - << stage.geom.const_diam_par | round(3) >> }{ << stage.geom.const_diam_par | round(3) >> }  
+                    }{
+                        1 + \frac{ 1 - << stage.geom.const_diam_par | round(3) >> }{ << stage.geom.const_diam_par | round(3) >>}
+                } } =\\
+                =<< stage.geom.D_const | round(4) >>\ м.\\  
+        \end{gather*}
+
+        \item Параметры на выходе находятся методом последовательных приближений. Представим результат последней итерации.
+        \begin{enumerate}
+
+            \item Угол на выходе с предпоследней итерации:
+            \[
+                \alpha_3^\prime = << (stage.alpha3_old * degr) | round(3) >>^\circ.
+            \]
+
+            \item Периферийная окружная скорость на выходе с предпоследней итерации:
+            \[
+                u_{3к}^\prime = << stage.u3_out_old | round(3) >>\ м/с.
+            \] 
+
+            \item Осевая скорость на выходе из РК:
+            \[
+                c_{3a} = u_{3к}^\prime \cdot \bar{c}_{3a} = 
+                << stage.u3_out_old | round(3) >> \cdot << stage.c3_a_rel | round(3) >> = 
+                << stage.c3_a | round(2) >>\ м/с.
+            \]
+
+            \item Приведенная скорость на выходе из РК:
+            \[
+                \lambda_3 = \frac{ c_{3a} }{ \sin{\alpha_3^\prime} \cdot a_{кр3} } = 
+                \frac{ << stage.c3_a | round(2) >> 
+                }{ 
+                    \sin{<< (stage.alpha3_old * degr) | round(3) >>^\circ} \cdot << stage.a_cr3 | round(2) >> } =
+                << stage.lam3 | round(3) >>. 
+            \]
+
+            \item ГДФ расхода на выходе:
+            \[
+                q_3 = q(\lambda_3, k_{ср}) = = q(<< stage.lam3 | round(3) >>, << stage.k_av | round(3) >>) = 
+                << stage.q3 | round(3) >>.
+            \]
+
+            \item Кольцевая площадь на выходе:
+            \begin{gather*}
+                F_3 = \frac{ G \cdot \sqrt{R \cdot T_3^*} }{ k_{ср} \cdot p_3^* \cdot q_3 \cdot \sin{\alpha_3^\prime} } =\\ 
+                =\frac{ 
+                    << stage.G | round(2) >> \cdot \sqrt{ << stage.R_gas >> \cdot << stage.T3_stag | round(2) >>}
+                }{ 
+                    << stage.k_av | round(3) >> \cdot << (stage.p3_stag / 10**6) | round(4) >> \cdot 10^6 \cdot << stage.q3 | round(3) >> 
+                    \cdot \sin{<< (stage.alpha3 * degr) | round(3) >>^\circ} 
+                } =\\ 
+                =<< stage.geom.F3 | round(4) >>\ м^2.\\
+            \end{gather*}
+
+            \item Относительный диаметр втулки на выходе:
+            \begin{gather*}
+                \bar{d}_{3вт} = \sqrt{ \frac{ 
+                                0.25 \cdot \pi \cdot \left( 
+                                    1 + \frac{ 1 - p_{пост} }{ p_{пост} } 
+                                \right) \cdot D_{пост}^2 - F_3
+                        }{ 
+                            F_3 \cdot \frac{ 1 - p_{пост} }{ p_{пост} } + 0.25 \cdot \pi \cdot \left( 
+                                    1 + \frac{ 1 - p_{пост} }{ p_{пост} } 
+                                \right) \cdot D_{пост}^2
+                    } } =\\ 
+                =\sqrt{ \frac{ 
+                                0.25 \cdot \pi \cdot \left( 
+                                    1 + \frac{ 1 - << stage.geom.const_diam_par | round(3) >> }{ << stage.geom.const_diam_par | round(3) >> } 
+                                \right) \cdot << stage.geom.D_const | round(3) >>^2 - << stage.geom.F3 | round(3) >>
+                        }{ 
+                            << stage.geom.F3 | round(3) >> \cdot 
+                            \frac{ 1 - << stage.geom.const_diam_par | round(3) >> }{ << stage.geom.const_diam_par | round(3) >> } 
+                            + 0.25 \cdot \pi \cdot \left( 
+                                    1 + \frac{ 1 - << stage.geom.const_diam_par | round(3) >> }{ << stage.geom.const_diam_par | round(3) >> } 
+                            \right) \cdot << stage.geom.D_const | round(3) >>^2
+                    } } =\\ 
+                = << stage.geom.d3_in_rel | round(3) >>.\\
+            \end{gather*}
+
+            \item Относительный средний диаметр на выходе:
+            \[
+                \bar{r}_{3ср} = \sqrt{ \frac{ 1 + \bar{d}_{3вт}^2 }{ 2 } } = 
+                \sqrt{ \frac{ 1 + << stage.geom.d3_in_rel | round(3) >> ^ 2 }{ 2 } } = 
+                << stage.geom.r3_av_rel | round(3) >>.
+            \]
+
+            \item Относительная окружная составляющая скорости на выходе из ступени:
+            \[
+                \bar{c}_{3u} = \bar{r}_{3ср} \cdot (1 - R_{ср\ след}) - \frac{ \bar{H}_{т\ след} }{ 2 \cdot  \bar{r}_{3ср}} = 
+                << stage.geom.r3_av_rel | round(3) >> \cdot (1 - << stage.R_av_next | round(3) >>) -
+                \frac{ << stage.H_t_rel_next | round(3) >> }{ 2 \cdot  << stage.geom.r3_av_rel | round(3) >>} =
+                << stage.c3_u_rel | round(3) >>. 
+            \]
+
+            \item Новое значение угла потока на выходе:
+            \[
+                \alpha_3 = \arctan{ \frac{ \bar{c}_{3a} }{ \bar{c}_{3u} } } = 
+                \arctan{ \frac{ << stage.c3_a_rel | round(3) >> }{ << stage.c3_u_rel | round(3) >> } } = 
+                << (stage.alpha3 * degr) | round(3) >>^\circ.
+            \]
+
+            \item Периферийный диаметр на выходе:
+            \[
+                D_{3к} = \sqrt{ \frac{ 4 \cdot F_3 }{ \pi \cdot (1 - \bar{d}_{3вт}^2) } } = 
+                \sqrt{ \frac{ 
+                        4 \cdot << stage.geom.F3 | round(4) >> 
+                    }{ 
+                        \pi \cdot (1 - << stage.geom.d3_in_rel | round(3) >>^2) 
+                } } = 
+                << (stage.geom.D3_out) | round(4) >>\ м.
+            \]
+
+            \item Втулочный диаметр на выходе:
+            \[
+                D_{3вт} = \bar{d}_{3вт} \cdot D_{3к} = 
+                << stage.geom.d3_in_rel | round(3) >> \cdot << stage.geom.D3_out | round(4) >> = 
+                << stage.geom.D3_in | round(4) >>\ м.
+            \]
+
+            \item Новое значение окружной скорости на периферии на выходе:
+            \[
+                u_{3к} = \frac{\pi \cdot D_{3к} \cdot n }{ 60 } = 
+                \frac{\pi \cdot << (stage.geom.D3_out) | round(4) >> \cdot << stage.n | round(1) >> }{ 60 } = 
+                << stage.u3_out | round(2) >>\ м/с.
+            \]
+
+            \item Невязка по углу:
+            \[
+                \delta_{\alpha} = \frac{ \left| \alpha_3^\prime - \alpha_3 \right| }{ \alpha_3^\prime } \cdot 100 \% = 
+                \frac{ 
+                    \left| << (stage.alpha3_old * degr) | round(2) >>^\circ - << (stage.alpha3 * degr) | round(2) >>^\circ \right| 
+                }{ 
+                    << (stage.alpha3_old * degr) | round(2) >>^\circ
+                } = 
+                << (stage.outlet_geom_res * 100) | round(3) >> \%.
+            \]
+
+            \item Невязка по скорости:
+            \[
+                \delta_{u} = \frac{ \left| u_{3к}^\prime - u_{3к} \right| }{ u_{3к}^\prime } \cdot 100 \% = 
+                \frac{ 
+                    \left| << (stage.u3_out_old) | round(2) >> - << (stage.u3_out) | round(2) >> \right| 
+                }{ 
+                    << (stage.u3_out_old * degr) | round(2) >>                
+                } = 
+                << (stage.outlet_geom_res * 100) | round(3) >> \%.
+            \]
+
+        \end{enumerate}
+
+        \item Окружная составляющая скорости на выходе:
+        \[
+            c_{3u} = \bar{c}_{3u} \cdot u_{3к} = 
+            << stage.c3_u_rel | round(3) >> \cdot << stage.u3_out | round(2) >> = 
+            << stage.c3_u | round(2) >>\ м/с.
+        \]
+
+        \item Абсолютная скорость на выходе из ступени:
+        \[
+            c_3 = \sqrt{ c_{3u}^2 + c_{3a}^2 } = 
+            \sqrt{ << stage.c3_u | round(2) >>^2 + << stage.c3_a | round(2) >>^2 } =
+            << stage.c3 | round(2) >>\ м/с. 
+        \] 
+
+        \item Относительный средний диаметр на выходе из РК:
+        \[
+            \bar{r}_{2ср} = 0.5 \cdot ( \bar{r}_{1ср} + \bar{r}_{3ср} ) = 
+            0.5 \cdot ( << stage.geom.r1_av_rel | round(3) >> + << stage.geom.r3_av_rel | round(3) >> ) = 
+            << stage.geom.r2_av_rel | round(3) >>.
+        \]
+
+        \item Относительная окружная составляющая скорости на выходе из РК:
+        \[
+            \bar{c}_{2u} = \frac{ \bar{H}_т + \bar{c}_{1u} \cdot \bar{r}_{1ср} }{ \bar{r}_{2ср} } =
+            \frac{ 
+                << stage.H_t_rel | round(3) >> + << stage.c1_u_rel | round(3) >> \cdot << stage.geom.r1_av_rel | round(3) >>
+            }{ 
+                << stage.geom.r2_av_rel | round(3) >> 
+            } = 
+            << stage.c2_u_rel | round(3) >>. 
+        \]
+
+        \item Осевая составляющая скорости на выходе из РК:
+        \[
+            c_{2a} = 0.5 \cdot (c_{1a} + c_{3a} ) = 
+            0.5 \cdot (<< stage.c1_a | round(3) >> + << stage.c3_a | round(3) >>) = 
+            << stage.c2_a | round(3) >>\ м/с.
+        \]
+
+        \item Периферийная окружная скорость на выходе из РК:
+        \[
+            u_{2к} = 0.5 \cdot (u_{1к} + u_{3к}) = 
+            0.5 \cdot ( << stage.u1_out | round(2) >> + << stage.u3_out | round(2) >> ) = 
+            << stage.u2_out | round(3) >>\ м/с.
+        \]
+
+        \item Относительная осевая скорость на выходе из РК:
+        \[
+            \bar{c}_{2a} = \frac{ c_{2a} }{ u_{2к} } = 
+            \frac{ << stage.c2_a | round(2) >> }{ << stage.u2_out | round(2) >> } = 
+            << stage.c2_a_rel | round(2) >>.
+        \]
+
+        \item Угол потока в относительном движении на входе в РК:
+        \[
+            \beta_1 = \arctan{ \frac{ \bar{c}_{1a} }{ \bar{r}_{1ср} - \bar{c}_{1u} } } = 
+            \arctan{ \frac{ << stage.c1_a_rel | round(3) >> }{ << stage.geom.r1_av_rel | round(3) >> - << stage.c1_u_rel | round(3) >> } } =
+            << (stage.beta1 * degr) | round(3) >>^\circ.
+        \] 
+
+        \item Угол потока в относительном движении на выходе из РК:
+        \[
+            \beta_2 = \arctan{ \frac{ \bar{c}_{2a} }{ \bar{r}_{2ср} - \bar{c}_{2u} } } = 
+            \arctan{ \frac{ << stage.c2_a_rel | round(3) >> }{ << stage.geom.r2_av_rel | round(3) >> - << stage.c2_u_rel | round(3) >> } } =
+            << (stage.beta2 * degr) | round(3) >>^\circ.
+        \] 
+
+        \item Угол потока в абсолютном движении на выходе из РК:
+        \[
+            \alpha_2 = \arctan{ \frac{ \bar{c}_{2a} }{ \bar{c}_{2u} } } = 
+            \arctan{ \frac{ << stage.c2_a_rel | round(3) >> }{ << stage.c2_u_rel | round(3) >> } } =
+            <<( stage.alpha2 * degr) | round(2) >>^\circ.
+        \]
+
+        \item Угол поворота потока в РК:
+        \[
+            \varepsilon_{рк} = \beta_2 - \beta_1 = 
+            << (stage.beta2 * degr) | round(2) >>^\circ - << (stage.beta1 * degr) | round(2) >>^\circ = 
+            << (stage.epsilon_rk * degr) | round(2) >>^\circ.
+        \]
+
+         \item Угол поворота потока в НА:
+        \[
+            \varepsilon_{на} = \alpha_3 - \alpha_2 = 
+            << (stage.alpha3 * degr) | round(2) >>^\circ - << (stage.alpha2 * degr) | round(2) >>^\circ = 
+            << (stage.epsilon_na * degr) | round(2) >>^\circ.
+        \]
+
+        \item Относительная скорость на входе в РК:
+        \[
+            w_1 = \frac{ c_{1a} }{ \sin{\beta_1} } = 
+            \frac{ << stage.c1_a | round(2) >> }{ \sin{ << (stage.beta1 * degr) | round(2) >>^\circ } } = 
+            << stage.w1 | round(2) >>\ м/с.
+        \]
+
+        \item Относительная скорость на выходе из РК:
+        \[
+            w_2 = \frac{ c_{2a} }{ \sin{\beta_2} } = 
+            \frac{ << stage.c2_a | round(2) >> }{ \sin{ << (stage.beta2 * degr) | round(2) >>^\circ } } = 
+            << stage.w2 | round(2) >>\ м/с.
+        \]
+
+        \item Окружная составляющая относительной скорости на входе в РК:
+        \[
+            w_{1u} = w_1 \cdot \cos{ \beta_1 } = 
+            << stage.w1 | round(2) >> \cdot << (stage.beta1 * degr) | round(2) >>^\circ = 
+            << stage.w1_u | round(2) >> \ м/с.
+        \]
+
+        \item Окружная составляющая относительной скорости на выходе из РК:
+        \[
+            w_{2u} = w_2 \cdot \cos{ \beta_2 } = 
+            << stage.w2 | round(2) >> \cdot << (stage.beta2 * degr) | round(2) >>^\circ = 
+            << stage.w2_u | round(2) >> \ м/с.
+        \]
+
+        \item Абсолютная скорость на выходе из РК:
+        \[
+            c_2 = \frac{ c_{2a} }{ \sin{\alpha_2} } = 
+            \frac{ << stage.c2_a | round(2) >> }{ \sin{ << (stage.alpha2 * degr) | round(2) >>^\circ } } = 
+            << stage.c2 | round(2) >>\ м/с.
+        \]
+
+        \item Окружная составляющая скорости на выходе из РК:
+        \[
+            c_{2u} = \bar{c}_{2u} \cdot u_{2к} = 
+            << stage.c2_u_rel | round(3) >> \cdot << stage.u2_out | round(2) >> = 
+            << stage.c2_u | round(3) >>\ м/с.
+        \]
+
+        \item ГДФ температуры на входе в РК:
+        \[
+            \tau_1 = 1 - \frac{ k_{ср} - 1 }{ k_{ср} + 1 } \cdot \lambda_1^2 =  
+            1 - \frac{ << stage.k_av | round(3) >> - 1 }{ << stage.k_av | round(3) >> + 1 } \cdot << stage.lam1 | round(3) >>^2
+        \]
+
+        \item Статическая температура на входе в РК:
+        \[
+            T_1 = T_1^* \cdot \tau_1 = << stage.T1_stag | round(2) >> \cdot << stage.tau1 | round(4) >> = 
+            << stage.T1 | round(3) >>\ К.
+        \]
+
+        \item Скорость звука на входе в РК:
+        \[
+            a_1 = \sqrt{ k_{ср} \cdot R \cdot T_1 } = 
+            \sqrt{ << stage.k_av | round(3) >> \cdot << stage.R_gas >> \cdot << stage.T1 | round(2) >> } =
+            << stage.a1 | round(2) >>\ м/с.
+        \]
+
+        \item Число Маха в относительном движении на входе в РК:
+        \[
+            M_{w1\ ср} = \frac{ w_1 }{ a_1 } = \frac{ << stage.w1 | round(2) >> }{ << stage.a1 | round(2) >> } = 
+            << stage.M_w1_av | round(4) >>.
+        \]
+
+        \item Приведенная скорость на выходе из РК:
+        \[
+            \lambda_2 = \frac{ c_2 }{ a_{кр3} } =
+            \frac{ << stage.c2 | round(2) >> }{ << stage.a_cr2 | round(2) >> } = 
+            << stage.lam2 | round(4) >>.
+        \]
+
+        \item ГДФ температуры на выходе из РК:
+        \[
+            \tau_2 = 1 - \frac{ k_{ср} - 1 }{ k_{ср} + 1 } \cdot \lambda_2^2 =  
+            1 - \frac{ << stage.k_av | round(3) >> - 1 }{ << stage.k_av | round(3) >> + 1 } \cdot << stage.lam2 | round(3) >>^2
+        \]
+
+        \item Статическая температура на выходе из РК:
+        \[
+            T_2 = T_2^* \cdot \tau_2 = << stage.T3_stag | round(2) >> \cdot << stage.tau2 | round(4) >> =
+            << stage.T2 | round(3) >>\ К.
+        \]
+
+        \item Скорость звука на выходе из РК:
+        \[
+            a_2 = \sqrt{ k_{ср} \cdot R \cdot T_2 } = 
+            \sqrt{ << stage.k_av | round(3) >> \cdot << stage.R_gas >> \cdot << stage.T2 | round(2) >> } =
+            << stage.a2 | round(2) >>\ м/с.
+        \]
+
+         \item Число Маха в абсолютном движении на выходе из РК:
+        \[
+            M_{c2\ ср} = \frac{ c_2 }{ a_2 } = \frac{ << stage.c2 | round(2) >> }{ << stage.a2 | round(2) >> } = 
+            << stage.M_c2_av | round(4) >>.
+        \]
+
+    \end{enumerate}
+
+    </ endmacro />
+
+
+\end{document}

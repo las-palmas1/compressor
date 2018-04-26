@@ -137,7 +137,7 @@ class Stage:
         self.k_h = k_h
         self.eta_ad_stag = eta_ad_stag
         self.c1_a_rel = c1_a_rel
-        self.c1_a_rel_next = c3_a_rel
+        self.c3_a_rel = c3_a_rel
         self.R_av = R_av
         self.R_av_next = R_av_next
         self.T1_stag = T1_stag
@@ -219,7 +219,7 @@ class Stage:
         self.M_c2_av = self.c2 / self.a2
 
     def _get_outlet_section_params(self, alpha3, u3_out):
-        self.c3_a = u3_out * self.c1_a_rel_next
+        self.c3_a = u3_out * self.c3_a_rel
         self.lam3 = self.c3_a / (np.sin(alpha3) * self.a_cr3)
         self.q3 = gd.q(self.lam3, self.k_av)
         self.geom.F3 = self.geom.F1 * (self.q1 * self.p1_stag * np.sin(self.alpha1)) / \
@@ -228,7 +228,7 @@ class Stage:
         self.geom.r3_av_rel = ((1 + self.geom.d3_in_rel ** 2) / 2) ** 0.5
         self.c3_u_rel = self.geom.r3_av_rel * (1 - self.R_av_next) - self.H_t_rel_next / (2 * self.geom.r3_av_rel)
         if self.c3_u_rel != 0:
-            alpha3_new = np.arctan(self.c1_a_rel_next / self.c3_u_rel)
+            alpha3_new = np.arctan(self.c3_a_rel / self.c3_u_rel)
         else:
             alpha3_new = np.arctan(np.inf)
         self.geom.D3_out = self.geom.get_D_out(self.geom.F3, self.geom.d3_in_rel)

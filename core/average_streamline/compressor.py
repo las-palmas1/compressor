@@ -2,6 +2,7 @@ from .stage_tools import Stage
 import typing
 from gas_turbine_cycle.gases import IdealGas
 import numpy as np
+from gas_turbine_cycle.tools.functions import eta_comp_stag_p
 from gas_turbine_cycle.tools.gas_dynamics import GasDynamicFunctions as gd
 from scipy.interpolate import InterpolatedUnivariateSpline
 import matplotlib.pyplot as plt
@@ -115,7 +116,7 @@ class Compressor:
                     k_av=self.k_av,
                     R_gas=self.work_fluid.R,
                     H_t_rel=self.H_t_rel_arr[i],
-                    H_t_rel_next=0,
+                    H_t_rel_next=(self.H_t_rel_arr[i] - self.H_t_rel_arr[i - 1]) + self.H_t_rel_arr[i],
                     u1_out=None,
                     k_h=self.k_h_arr[i],
                     eta_ad_stag=self.eta_ad_stag_arr[i],
@@ -123,7 +124,7 @@ class Compressor:
                     c1_a_rel=self.c1_a_rel_arr[i],
                     c3_a_rel=(self.c1_a_rel_arr[i] - self.c1_a_rel_arr[i - 1]) + self.c1_a_rel_arr[i],
                     R_av=self.R_av_arr[i],
-                    R_av_next=1,
+                    R_av_next=(self.R_av_arr[i] - self.R_av_arr[i - 1]) + self.R_av_arr[i],
                     T1_stag=None,
                     p1_stag=None,
                     G=self.G,
@@ -213,6 +214,7 @@ class Compressor:
         self.pi_c_stag = self.pi_la_stag * self.sigma_inlet * self.sigma_outlet
         self.eta_c_stag = self.T0_stag * (self.pi_c_stag ** ((self.k_av - 1) / self.k_av) - 1) / \
                           (self.last.T3_stag - self.first.T1_stag)
+        self.eta_c_stag_p = eta_comp_stag_p(self.pi_c_stag, self.k_av, self.eta_c_stag)
 
     def _get_r_arr(self):
         r_out_arr = []

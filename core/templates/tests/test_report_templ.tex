@@ -1,0 +1,53 @@
+%%
+%% Author: User1
+%% 26.04.2018
+%%
+
+% Preamble
+\documentclass[a4paper,10pt]{article}
+
+% Packages
+\usepackage{mathtext}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{longtable}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[left=2cm,right=2cm,
+    top=2cm,bottom=2cm,bindingoffset=0cm]{geometry}
+\usepackage{color}
+\usepackage{gensymb}
+
+\usepackage{enumitem}
+\setlist[enumerate]{label*=\arabic*.}
+
+\usepackage{indentfirst}
+
+\usepackage{titlesec}
+
+% Document
+\begin{document}
+
+    \section{Поступенчатый расчет компрессора.}
+
+    </ import 'average_streamline.tex' as avline />
+
+    \subsection{Первая ступень}
+    \subsubsection{Исходные данные.}
+
+    << avline.stage_init_data(comp[0]) >>
+
+    \subsubsection{Расчет.}
+
+    << avline.stage(comp[0]) >>
+
+    \subsection{Результаты.}
+
+    << avline.stage_tables(comp) >>
+
+
+
+\end{document}
