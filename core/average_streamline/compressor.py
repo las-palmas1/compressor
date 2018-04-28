@@ -7,7 +7,7 @@ from gas_turbine_cycle.tools.gas_dynamics import GasDynamicFunctions as gd
 from scipy.interpolate import InterpolatedUnivariateSpline
 import matplotlib.pyplot as plt
 import logging
-
+import xlwt as xl
 
 logging.basicConfig(format='%(levelname)s - %(message)s', level=logging.INFO)
 
@@ -215,6 +215,7 @@ class Compressor:
         self.eta_c_stag = self.T0_stag * (self.pi_c_stag ** ((self.k_av - 1) / self.k_av) - 1) / \
                           (self.last.T3_stag - self.first.T1_stag)
         self.eta_c_stag_p = eta_comp_stag_p(self.pi_c_stag, self.k_av, self.eta_c_stag)
+        self.length = sum([i.geom.length for i in self])
 
     def _get_r_arr(self):
         r_out_arr = []
@@ -363,6 +364,44 @@ class Compressor:
         else:
             plt.ylim(ymin=0)
         self._set_dist_plot(fname)
+
+    def write_compass_parameter_file(self, fname, prefix='comp', pnt_num=7):
+        wb = xl.Workbook()
+        ws = wb.add_sheet('VarTable')
+        ws.write(0, 0, 'Комментарий')
+        ws.write(1, 0, 'row')
+        ws.write(0, 1, '%s_length' % prefix)
+        ws.write(1, 1, self.length * 1e3)
+        ws.write(0, 2, '%s_r_inlet_in' % prefix)
+        ws.write(1, 2, self.first.geom.D1_in / 2 * 1e3)
+        ws.write(0, 3, '%s_r_inlet_out' % prefix)
+        ws.write(1, 3, self.first.geom.D1_out / 2 * 1e3)
+        ws.write(0, 4, '%s_r_outlet_in' % prefix)
+        ws.write(1, 4, self.last.geom.D1_in / 2 * 1e3)
+        ws.write(0, 5, '%s_r_outlet_out' % prefix)
+        ws.write(1, 5, self.last.geom.D1_out / 2 * 1e3)
+        ws.write(0, 6, '%s_r_const' % prefix)
+        ws.write(1, 6, self.last.geom.D_const / 2 * 1e3)
+        start = 6
+        r_in_arr_fit, r_const_arr_fit, r_out_arr_fit = self._get_r_arr()
+        x_arr_fit = self._get_x_arr()
+        spline_out = InterpolatedUnivariateSpline(x_arr_fit, r_out_arr_fit)
+        spline_in = InterpolatedUnivariateSpline(x_arr_fit, r_in_arr_fit)
+        x_arr = np.linspace(0, max(x_arr_fit), pnt_num)
+        r_out_arr = spline_out(x_arr)
+        r_in_arr = spline_in(x_arr)
+        for i in range(self.stage_num):
+            ws.write(0, start + i + 1, '%s_length_%s' % (prefix, i + 1))
+            ws.write(1, start + i + 1, self[i].geom.length)
+        for i in range(pnt_num):
+            ws.write(0, start + self.stage_num + i * 3 + 1, '%s_x_%s' % (prefix, i))
+            ws.write(1, start + self.stage_num + i * 3 + 1, x_arr[i] * 1e3)
+            ws.write(0, start + self.stage_num + i * 3 + 2, '%s_r_out_%s' % (prefix, i))
+            ws.write(1, start + self.stage_num + i * 3 + 2, r_out_arr[i] * 1e3)
+            ws.write(0, start + self.stage_num + i * 3 + 3, '%s_r_in_%s' % (prefix, i))
+            ws.write(1, start + self.stage_num + i * 3 + 3, r_in_arr[i] * 1e3)
+        wb.save(fname)
+
 
 
 
