@@ -103,7 +103,7 @@ class CompressorTests(unittest.TestCase):
         self.compressor = Compressor(
             work_fluid=Air(),
             stage_num=stage_num,
-            const_diam_par=0.5,
+            const_diam_par_arr=[0.5 for _ in range(6)] + [1 for _ in range(6, stage_num)],
             p0_stag=1e5,
             T0_stag=288,
             G=40,

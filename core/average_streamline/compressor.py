@@ -14,7 +14,9 @@ logging.basicConfig(format='%(levelname)s - %(message)s', level=logging.INFO)
 
 class Compressor:
     def __init__(
-            self, work_fluid: IdealGas, stage_num: int, const_diam_par, p0_stag, T0_stag, G, n,
+            self, work_fluid: IdealGas, stage_num: int,
+            p0_stag, T0_stag, G, n,
+            const_diam_par_arr: typing.List[float],
             H_t_rel_arr: typing.List[float],
             eta_ad_stag_arr: typing.List[float],
             R_av_arr: typing.List[float],
@@ -29,10 +31,10 @@ class Compressor:
     ):
         self.work_fluid = work_fluid
         self.stage_num = stage_num
-        if 0 <= const_diam_par <= 1:
-            self.const_diam_par = const_diam_par
-        else:
-            raise ValueError('const_diam_par should be greater than or equal to 0 and less than or equal to 1')
+        for const_diam_par in const_diam_par_arr:
+            if not (0 <= const_diam_par <= 1):
+                raise ValueError('const_diam_par should be greater than or equal to 0 and less than or equal to 1')
+        self.const_diam_par_arr = const_diam_par_arr
         self.p0_stag = p0_stag
         self.T0_stag = T0_stag
         self.G = G
@@ -104,7 +106,7 @@ class Compressor:
                     p1_stag=None,
                     G=self.G,
                     n=self.n,
-                    const_diam_par=self.const_diam_par,
+                    const_diam_par=self.const_diam_par_arr[i],
                     precision=self.precision,
                     h_rk_rel=self.h_rk_rel_arr[i],
                     h_na_rel=self.h_na_rel_arr[i],
@@ -129,7 +131,7 @@ class Compressor:
                     p1_stag=None,
                     G=self.G,
                     n=self.n,
-                    const_diam_par=self.const_diam_par,
+                    const_diam_par=self.const_diam_par_arr[i],
                     precision=self.precision,
                     h_rk_rel=self.h_rk_rel_arr[i],
                     h_na_rel=self.h_na_rel_arr[i],
@@ -269,17 +271,15 @@ class Compressor:
         r_in_arr_fit, r_const_arr_fit, r_out_arr_fit = self._get_r_arr()
         x_arr_fit = self._get_x_arr()
         spline_out = InterpolatedUnivariateSpline(x_arr_fit, r_out_arr_fit)
-        spline_av = InterpolatedUnivariateSpline(x_arr_fit, r_const_arr_fit)
         spline_in = InterpolatedUnivariateSpline(x_arr_fit, r_in_arr_fit)
         x_arr_new = np.linspace(0, x_arr_fit[len(x_arr_fit) - 1], 100)
         r_in_arr_new = [spline_in(x) for x in x_arr_new]
-        r_const_arr_new = [spline_av(x) for x in x_arr_new]
         r_out_arr_new = [spline_out(x) for x in x_arr_new]
 
         plt.figure(figsize=figsize)
         plt.plot(x_arr_new, r_in_arr_new, lw=1.5, color='black')
-        plt.plot(x_arr_new, r_const_arr_new, lw=0.7, color='black', ls='--')
         plt.plot(x_arr_new, r_out_arr_new, lw=1.5, color='black')
+        plt.plot(x_arr_fit, r_const_arr_fit, lw=0.75, color='black', ls='--')
 
         for i in range(len(x_arr_fit)):
             if ((i + 1) / 2) % 2 == 0 or ((i + 1) / 2) % 2 == 1.5:
@@ -392,7 +392,7 @@ class Compressor:
         r_in_arr = spline_in(x_arr)
         for i in range(self.stage_num):
             ws.write(0, start + i + 1, '%s_length_%s' % (prefix, i + 1))
-            ws.write(1, start + i + 1, self[i].geom.length)
+            ws.write(1, start + i + 1, self[i].geom.length * 1e3)
         for i in range(pnt_num):
             ws.write(0, start + self.stage_num + i * 3 + 1, '%s_x_%s' % (prefix, i))
             ws.write(1, start + self.stage_num + i * 3 + 1, x_arr[i] * 1e3)
