@@ -6,7 +6,7 @@ setup(
     package_dir={'compressor': 'core', 'compressor.average_streamline': 'core/average_streamline',
                  'compressor.templates': 'core/templates'},
     packages=['compressor', 'compressor.average_streamline', 'compressor.templates'],
-    package_data={'compressor': ['templates/average_streamline.tex']},
+    package_data={'compressor': ['templates/comp_average_streamline.tex']},
     url='',
     license='',
     author='Alexander Zhigalkin',
